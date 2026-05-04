@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LCSW Voice Note Prototype</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>LCSW Notes</title>
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="styles.css">
   <meta name="theme-color" content="#2563eb">
@@ -14,336 +14,418 @@
 </head>
 <body>
 
-  <!-- Install Banner -->
-  <div id="install-banner" class="install-banner hidden">
-    <span>&#128241; To install: open in Safari/Chrome and choose <strong>Add to Home Screen</strong>.</span>
-    <button onclick="dismissInstallBanner()" aria-label="Dismiss">&#x2715;</button>
-  </div>
-
-  <!-- Header -->
-  <header class="app-header">
-    <div class="header-content">
-      <div class="header-title">
-        <span class="app-icon" aria-hidden="true">&#129690;</span>
-        <h1>LCSW Voice Note</h1>
-        <span class="version-badge">Prototype</span>
-      </div>
-      <div class="header-status">
-        <span id="online-indicator" class="status-badge badge-online">&#9679; Online</span>
-        <span id="note-status-badge" class="status-badge badge-draft">Draft</span>
+  <!-- ── Top App Bar ─────────────────────────────────────────── -->
+  <header class="app-bar">
+    <div class="app-bar-inner">
+      <span class="app-bar-title">LCSW Notes</span>
+      <div class="app-bar-status">
+        <span id="online-indicator" class="status-pill pill-online">Online</span>
+        <span id="note-status-badge" class="status-pill pill-draft">Draft</span>
       </div>
     </div>
   </header>
 
-  <main class="main-content">
+  <!-- ── Install Banner (slim, dismissible) ─────────────────── -->
+  <div id="install-banner" class="install-banner hidden">
+    <span>Add to Home Screen for the best experience.</span>
+    <button onclick="dismissInstallBanner()" aria-label="Dismiss">&times;</button>
+  </div>
 
-    <!-- ─────────────────────────────────────────────────────
-         SECTION 1 — Session Setup
-         ───────────────────────────────────────────────────── -->
-    <section class="card" id="section-setup">
-      <h2 class="card-title">&#9997; Session Setup</h2>
-      <div class="form-grid">
+  <!-- ── View Container ─────────────────────────────────────── -->
+  <main class="view-container">
 
-        <div class="form-group">
-          <label for="client-select">Client <span class="label-note">(demo data only)</span></label>
-          <select id="client-select"></select>
+    <!-- ═══════════════════════════════════════════════════════
+         VIEW: Home
+         ═══════════════════════════════════════════════════════ -->
+    <div class="view active" id="view-home">
+
+      <!-- Session Summary -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-heading">Current Session</span>
+          <button class="link-btn" onclick="switchView('capture')">Edit</button>
+        </div>
+        <div class="meta-grid">
+          <div class="meta-row">
+            <span class="meta-label">Client</span>
+            <span id="home-client" class="meta-value">Demo Client A</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Date</span>
+            <span id="home-date" class="meta-value">—</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Note Type</span>
+            <span id="home-note-type" class="meta-value">SOAP</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Mode</span>
+            <span id="home-mode" class="meta-value">Typed notes</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <button class="action-tile" onclick="switchView('capture')">
+          <div class="action-tile-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </div>
+          <span class="action-tile-label">Capture</span>
+        </button>
+        <button class="action-tile" onclick="switchView('draft')">
+          <div class="action-tile-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          </div>
+          <span class="action-tile-label">Draft</span>
+        </button>
+        <button class="action-tile" onclick="switchView('export')">
+          <div class="action-tile-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          </div>
+          <span class="action-tile-label">Export</span>
+        </button>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-heading">Recent Activity</span>
+        </div>
+        <div id="home-recent-activity" class="recent-list">
+          <p class="empty-state">No activity yet.</p>
+        </div>
+      </div>
+
+      <p class="prototype-notice">Prototype only — not HIPAA compliant by itself. Demo data only.</p>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════
+         VIEW: Capture
+         ═══════════════════════════════════════════════════════ -->
+    <div class="view" id="view-capture">
+
+      <!-- Session Setup -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-heading">Session Setup</span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="client-select">Client <span class="label-muted">demo</span></label>
+            <select id="client-select"></select>
+          </div>
+          <div class="form-group">
+            <label for="session-date">Date</label>
+            <input type="date" id="session-date">
+          </div>
+          <div class="form-group">
+            <label for="note-type">Note Type</label>
+            <select id="note-type">
+              <option value="SOAP">SOAP</option>
+              <option value="DAP">DAP</option>
+              <option value="BIRP">BIRP</option>
+              <option value="Brief">Brief Progress Note</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="session-mode">Mode</label>
+            <select id="session-mode">
+              <option value="typed">Typed notes only</option>
+              <option value="record">Record/transcribe (mock)</option>
+              <option value="ai">AI-assisted draft (mock)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recording & Transcript -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-heading">Recording &amp; Transcript</span>
+          <span id="recording-status-badge" class="status-pill pill-neutral">Not recording</span>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0.875rem;">
+          <label class="checkbox-label">
+            <input type="checkbox" id="consent-checkbox">
+            Client recording consent documented
+          </label>
+          <p class="helper-text">Demo only. Real recording requires HIPAA-covered vendors and BAA-covered hosting.</p>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label class="toggle-label">
+            <input type="checkbox" id="auto-delete-toggle" checked>
+            <span class="toggle-slider"></span>
+            Auto-delete raw audio after transcription
+            <span class="label-muted">(no audio stored)</span>
+          </label>
+        </div>
+
+        <div class="button-row" style="margin-bottom: 1.25rem;">
+          <button id="btn-start-record" class="btn btn-danger" disabled>Start Recording</button>
+          <button id="btn-stop-record" class="btn btn-secondary" disabled>Stop</button>
         </div>
 
         <div class="form-group">
-          <label for="session-date">Session Date</label>
-          <input type="date" id="session-date">
+          <label for="transcript-area">Transcript</label>
+          <textarea id="transcript-area" rows="6"
+            placeholder="Transcript appears here during recording. You can also type or paste directly."></textarea>
         </div>
 
+        <div class="button-row">
+          <button id="btn-use-transcript" class="btn btn-primary">Use as Rough Notes</button>
+          <button id="btn-clear-transcript" class="btn btn-ghost">Clear</button>
+        </div>
+      </div>
+
+      <!-- Rough Notes -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-heading">Rough Notes</span>
+        </div>
         <div class="form-group">
-          <label for="note-type">Note Type</label>
-          <select id="note-type">
-            <option value="SOAP">SOAP</option>
-            <option value="DAP">DAP</option>
-            <option value="BIRP">BIRP</option>
-            <option value="Brief">Brief Progress Note</option>
-          </select>
-        </div>
+          <textarea id="rough-notes" rows="9"
+            placeholder="Type rough session notes freely. Combined with transcript when generating draft.
 
-        <div class="form-group">
-          <label for="session-mode">Session Mode</label>
-          <select id="session-mode">
-            <option value="typed">Typed notes only</option>
-            <option value="record">Record/transcribe session (mock)</option>
-            <option value="ai">AI-assisted draft (mock)</option>
-          </select>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- ─────────────────────────────────────────────────────
-         SECTION 2 — Voice Recording / Transcription
-         ───────────────────────────────────────────────────── -->
-    <section class="card" id="section-recording">
-      <h2 class="card-title">&#127908; Recording &amp; Transcript</h2>
-
-      <div class="warning-box" role="alert">
-        <strong>&#9888; Do not use real client sessions in this prototype.</strong>
-        Real recording/transcription requires client consent, HIPAA-covered vendors,
-        BAA-covered hosting, and secure retention/deletion policies.
-      </div>
-
-      <div class="form-group">
-        <label class="checkbox-label">
-          <input type="checkbox" id="consent-checkbox">
-          Client recording consent documented
-        </label>
-      </div>
-
-      <div class="form-group" style="margin-top: 0.5rem;">
-        <label class="toggle-label">
-          <input type="checkbox" id="auto-delete-toggle" checked>
-          <span class="toggle-slider"></span>
-          Auto-delete raw audio after transcription
-          <span class="label-note">(demo toggle — no audio is stored)</span>
-        </label>
-      </div>
-
-      <div class="recording-controls">
-        <button id="btn-start-record" class="btn btn-danger" disabled>
-          &#127908; Start Recording
-        </button>
-        <button id="btn-stop-record" class="btn btn-secondary" disabled>
-          &#9209; Stop Recording
-        </button>
-        <span id="recording-status-badge" class="status-badge badge-neutral">Not recording</span>
-      </div>
-
-      <div class="form-group" style="margin-top: 1.25rem;">
-        <label for="transcript-area">Transcript</label>
-        <textarea id="transcript-area" rows="7"
-          placeholder="Transcript will appear here after recording. You can also type or paste text directly."></textarea>
-      </div>
-
-      <div class="button-row">
-        <button id="btn-use-transcript" class="btn btn-primary">
-          &#8595; Use Transcript as Rough Notes
-        </button>
-        <button id="btn-clear-transcript" class="btn btn-ghost">
-          Clear Transcript
-        </button>
-      </div>
-    </section>
-
-    <!-- ─────────────────────────────────────────────────────
-         SECTION 3 — Rough Notes
-         ───────────────────────────────────────────────────── -->
-    <section class="card" id="section-rough">
-      <h2 class="card-title">&#128221; Rough Notes</h2>
-      <div class="form-group">
-        <label for="rough-notes">Session notes — type freely</label>
-        <textarea id="rough-notes" rows="9"
-          placeholder="Type rough session notes here. These will be combined with any transcript when generating the draft note. Use plain language — the mock AI formatter will structure it.&#10;&#10;Example:&#10;Client reported feeling anxious this week. Work stress and sleep issues. Used CBT thought record — helpful. Denied SI/HI. Plan: continue CBT, practice grounding before bed."></textarea>
-      </div>
-      <div class="button-row">
-        <button id="btn-generate-draft" class="btn btn-primary btn-large">
-          &#9889; Generate Draft Note
-        </button>
-      </div>
-    </section>
-
-    <!-- ─────────────────────────────────────────────────────
-         SECTION 4 — Draft Clinical Note
-         ───────────────────────────────────────────────────── -->
-    <section class="card" id="section-draft">
-      <h2 class="card-title">&#128203; Draft Clinical Note</h2>
-
-      <div class="draft-status-bar">
-        <span id="draft-note-label" class="label-text">Draft Clinical Note</span>
-        <span id="draft-timestamp" class="timestamp-text"></span>
-      </div>
-
-      <div class="form-group">
-        <textarea id="draft-note" rows="18"
-          placeholder="Generated note will appear here after clicking Generate Draft Note.&#10;&#10;Review and edit the draft before signing."></textarea>
-      </div>
-
-      <div class="checklist-box">
-        <h3>&#9989; AI Draft Quality Checklist</h3>
-        <ul>
-          <li>&#9989; Therapist must review accuracy — do not rely on mock output alone</li>
-          <li>&#9989; Do not rely on transcript alone; verify against your clinical judgment</li>
-          <li>&#9989; Remove irrelevant or erroneous session details</li>
-          <li>&#9989; Confirm interventions and plan accurately reflect the session</li>
-          <li>&#9989; Confirm risk/safety language is accurate and complete if applicable</li>
-        </ul>
-      </div>
-    </section>
-
-    <!-- ─────────────────────────────────────────────────────
-         SECTION 5 — Sign / Lock Note
-         ───────────────────────────────────────────────────── -->
-    <section class="card" id="section-sign">
-      <h2 class="card-title">&#9997; Sign / Lock Note</h2>
-
-      <div class="sign-status-row">
-        <span id="sign-status-text" class="status-badge badge-neutral">Unsigned</span>
-      </div>
-
-      <div id="signed-info" class="signed-info hidden">
-        <p><strong>Signed by:</strong> Jane Smith, LCSW <span class="label-note">(demo)</span></p>
-        <p id="sign-timestamp-display"></p>
-      </div>
-
-      <div class="button-row">
-        <button id="btn-sign" class="btn btn-success btn-large">
-          &#9997; Sign / Lock Note
-        </button>
-        <button id="btn-unlock" class="btn btn-secondary hidden">
-          &#128275; Unlock for Amendment
-        </button>
-      </div>
-
-      <div id="amendment-panel" class="amendment-panel hidden">
-        <div class="form-group">
-          <label for="amendment-reason">Amendment Reason <span class="required-mark">*</span> (required)</label>
-          <textarea id="amendment-reason" rows="3"
-            placeholder="Describe the reason for this amendment (e.g., correcting documentation error, adding omitted intervention)..."></textarea>
-        </div>
-        <div id="amendment-error" class="error-msg hidden">
-          &#9888; Please enter an amendment reason before unlocking.
+Example: Client reported anxiety re: work stress, sleep issues. Used CBT thought record — helpful. Denied SI/HI. Plan: continue CBT, grounding before bed."></textarea>
         </div>
         <div class="button-row">
-          <button id="btn-confirm-unlock" class="btn btn-warning">Confirm Unlock</button>
-          <button id="btn-cancel-unlock" class="btn btn-ghost">Cancel</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ─────────────────────────────────────────────────────
-         SECTION 6 — eCW-Friendly Export
-         ───────────────────────────────────────────────────── -->
-    <section class="card" id="section-export">
-      <h2 class="card-title">&#128196; eCW-Friendly Export</h2>
-
-      <div class="info-box">
-        <strong>Prototype only.</strong> Final note must be reviewed and entered into eCW manually.
-        Do not paste unreviewed AI-generated text directly into your EHR.
-      </div>
-
-      <div class="form-group">
-        <label for="ecw-paste-format">eCW Paste Format <span class="label-note">(plain text, ready to copy)</span></label>
-        <textarea id="ecw-paste-format" rows="12" readonly
-          placeholder="Sign the note first to generate the export text..."></textarea>
-      </div>
-
-      <div class="button-row">
-        <button id="btn-copy-ecw" class="btn btn-primary">
-          &#128203; Copy Note for eCW
-        </button>
-        <button id="btn-download-txt" class="btn btn-secondary">
-          &#8659; Download TXT
-        </button>
-        <button id="btn-download-html" class="btn btn-secondary">
-          &#8659; Download PDF-style HTML
-        </button>
-      </div>
-    </section>
-
-    <!-- ─────────────────────────────────────────────────────
-         SECTION 7 — Future eCW Read Integration Mock
-         ───────────────────────────────────────────────────── -->
-    <section class="card" id="section-ecw-read">
-      <h2 class="card-title">&#128279; Future eCW Patient Context</h2>
-
-      <div class="info-box">
-        In the real version, this panel would populate via eCW FHIR/SMART on FHIR authorization.
-        This prototype uses fake demo data only.
-      </div>
-
-      <div class="ecw-fields" id="ecw-context-fields">
-        <div class="field-row">
-          <span class="field-label">Patient ID</span>
-          <span id="ecw-patient-id" class="field-value empty">—</span>
-        </div>
-        <div class="field-row">
-          <span class="field-label">Appointment Date</span>
-          <span id="ecw-appt-date" class="field-value empty">—</span>
-        </div>
-        <div class="field-row">
-          <span class="field-label">Provider</span>
-          <span id="ecw-provider" class="field-value empty">—</span>
-        </div>
-        <div class="field-row">
-          <span class="field-label">Encounter Type</span>
-          <span id="ecw-encounter" class="field-value empty">—</span>
+          <button id="btn-generate-draft" class="btn btn-primary btn-full">Generate Draft Note</button>
         </div>
       </div>
 
-      <div class="button-row">
-        <button id="btn-load-ecw" class="btn btn-primary">
-          &#128640; Load Mock eCW Context
-        </button>
-      </div>
-    </section>
+    </div>
 
-    <!-- ─────────────────────────────────────────────────────
-         SECTION 8 — Future eCW Writeback Mock
-         ───────────────────────────────────────────────────── -->
-    <section class="card" id="section-ecw-write">
-      <h2 class="card-title">&#128228; Future eCW Writeback</h2>
 
-      <div class="info-box">
-        This simulates the steps that would be verified before sending a note to eCW.
-        <strong>No data is sent.</strong>
-      </div>
+    <!-- ═══════════════════════════════════════════════════════
+         VIEW: Draft
+         ═══════════════════════════════════════════════════════ -->
+    <div class="view" id="view-draft">
 
-      <div class="writeback-checklist">
-        <div class="check-item" id="check-api">&#9744; eCW API access enabled</div>
-        <div class="check-item" id="check-reg">&#9744; App registered with eCW</div>
-        <div class="check-item" id="check-baa">&#9744; BAA-covered hosting confirmed</div>
-        <div class="check-item" id="check-signed">&#9744; Therapist reviewed and signed note</div>
-        <div class="check-item" id="check-audit">&#9744; Audit log recorded</div>
-        <div class="check-item" id="check-secure">&#9744; Note exported or transmitted securely</div>
-      </div>
+      <!-- Note Editor -->
+      <div class="card">
+        <div class="note-status-bar">
+          <span id="draft-note-label" class="card-heading">Draft Clinical Note</span>
+          <span id="draft-timestamp" class="timestamp-text"></span>
+        </div>
+        <div class="form-group">
+          <textarea id="draft-note" rows="20"
+            placeholder="Generate a note in the Capture tab, then review and edit it here before signing."></textarea>
+        </div>
 
-      <div id="writeback-status" class="writeback-status hidden">
-        &#128683; Mock only — no data sent.
-      </div>
-
-      <div class="button-row">
-        <button id="btn-simulate-writeback" class="btn btn-primary">
-          &#128640; Simulate Send to eCW
-        </button>
-      </div>
-    </section>
-
-    <!-- ─────────────────────────────────────────────────────
-         SECTION 9 — Audit Log
-         ───────────────────────────────────────────────────── -->
-    <section class="card" id="section-audit">
-      <h2 class="card-title">&#128195; Audit Log</h2>
-
-      <div class="info-box small">
-        All key actions are timestamped below. No raw PHI is stored in this log.
-        This log is session-only and is not persisted.
+        <!-- AI Checklist (collapsible) -->
+        <details class="checklist-details">
+          <summary class="checklist-summary">Review Checklist</summary>
+          <ul class="checklist-list">
+            <li>Review accuracy — do not rely on mock output alone</li>
+            <li>Verify against your clinical judgment, not transcript alone</li>
+            <li>Remove any irrelevant or erroneous details</li>
+            <li>Confirm interventions and plan reflect the actual session</li>
+            <li>Confirm risk/safety language is accurate and complete</li>
+          </ul>
+        </details>
       </div>
 
-      <div id="audit-log" class="audit-log" role="log" aria-live="polite" aria-label="Audit log"></div>
+      <!-- Sign / Lock -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-heading">Sign &amp; Lock</span>
+          <span id="sign-status-text" class="status-pill pill-neutral">Unsigned</span>
+        </div>
 
-      <div class="button-row">
-        <button id="btn-copy-audit" class="btn btn-ghost">
-          &#128203; Copy Audit Log
-        </button>
+        <div id="signed-info" class="signed-info hidden">
+          <p><strong>Signed by:</strong> Jane Smith, LCSW <span class="label-muted">(demo)</span></p>
+          <p id="sign-timestamp-display" class="timestamp-text"></p>
+        </div>
+
+        <div class="button-row">
+          <button id="btn-sign" class="btn btn-success btn-full">Sign &amp; Lock Note</button>
+          <button id="btn-unlock" class="btn btn-secondary hidden">Unlock for Amendment</button>
+        </div>
+
+        <div id="amendment-panel" class="amendment-panel hidden">
+          <div class="form-group">
+            <label for="amendment-reason">Amendment Reason <span class="required-mark">*</span></label>
+            <textarea id="amendment-reason" rows="3"
+              placeholder="Describe the reason for this amendment..."></textarea>
+          </div>
+          <div id="amendment-error" class="error-msg hidden">Amendment reason is required.</div>
+          <div class="button-row">
+            <button id="btn-confirm-unlock" class="btn btn-warning">Confirm Unlock</button>
+            <button id="btn-cancel-unlock" class="btn btn-ghost">Cancel</button>
+          </div>
+        </div>
       </div>
-    </section>
+
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════
+         VIEW: Export
+         ═══════════════════════════════════════════════════════ -->
+    <div class="view" id="view-export">
+
+      <!-- Export Card -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-heading">Export Note</span>
+        </div>
+        <p class="helper-text" style="margin-bottom: 0.875rem;">Final note must be reviewed and entered into eCW manually. Do not paste unreviewed text into your EHR.</p>
+        <div class="form-group">
+          <label for="ecw-paste-format">Plain Text — ready to copy</label>
+          <textarea id="ecw-paste-format" rows="10" readonly
+            placeholder="Sign the note in the Draft tab to generate export text..."></textarea>
+        </div>
+        <div class="button-row">
+          <button id="btn-copy-ecw" class="btn btn-primary">Copy for eCW</button>
+          <button id="btn-download-txt" class="btn btn-secondary">Download TXT</button>
+          <button id="btn-download-html" class="btn btn-secondary">Printable HTML</button>
+        </div>
+      </div>
+
+      <!-- Mock eCW Context (collapsible) -->
+      <details class="collapsible-card">
+        <summary class="collapsible-header">
+          <span>Future eCW Patient Context</span>
+          <span class="future-tag">Mock</span>
+        </summary>
+        <div class="collapsible-body">
+          <p class="helper-text" style="margin-bottom: 0.875rem;">In production this would use eCW FHIR/SMART authorization. Demo data only.</p>
+          <div class="ecw-fields">
+            <div class="field-row">
+              <span class="field-label">Patient ID</span>
+              <span id="ecw-patient-id" class="field-value empty">—</span>
+            </div>
+            <div class="field-row">
+              <span class="field-label">Appt. Date</span>
+              <span id="ecw-appt-date" class="field-value empty">—</span>
+            </div>
+            <div class="field-row">
+              <span class="field-label">Provider</span>
+              <span id="ecw-provider" class="field-value empty">—</span>
+            </div>
+            <div class="field-row">
+              <span class="field-label">Encounter</span>
+              <span id="ecw-encounter" class="field-value empty">—</span>
+            </div>
+          </div>
+          <div class="button-row">
+            <button id="btn-load-ecw" class="btn btn-secondary">Load Mock Context</button>
+          </div>
+        </div>
+      </details>
+
+      <!-- Mock eCW Writeback (collapsible) -->
+      <details class="collapsible-card">
+        <summary class="collapsible-header">
+          <span>Future eCW Writeback</span>
+          <span class="future-tag">Mock</span>
+        </summary>
+        <div class="collapsible-body">
+          <p class="helper-text" style="margin-bottom: 0.875rem;">Simulates pre-send verification. No data is sent.</p>
+          <div class="writeback-checklist">
+            <div class="check-item" id="check-api">eCW API access enabled</div>
+            <div class="check-item" id="check-reg">App registered with eCW</div>
+            <div class="check-item" id="check-baa">BAA-covered hosting confirmed</div>
+            <div class="check-item" id="check-signed">Therapist reviewed and signed note</div>
+            <div class="check-item" id="check-audit">Audit log recorded</div>
+            <div class="check-item" id="check-secure">Note transmitted securely</div>
+          </div>
+          <div id="writeback-status" class="writeback-status hidden">Mock only — no data sent.</div>
+          <div class="button-row">
+            <button id="btn-simulate-writeback" class="btn btn-secondary">Simulate Send to eCW</button>
+          </div>
+        </div>
+      </details>
+
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════
+         VIEW: Settings
+         ═══════════════════════════════════════════════════════ -->
+    <div class="view" id="view-settings">
+
+      <!-- App Info -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-heading">About</span>
+        </div>
+        <div class="meta-grid">
+          <div class="meta-row">
+            <span class="meta-label">App</span>
+            <span class="meta-value">LCSW Voice Note Prototype</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Network</span>
+            <span id="settings-online" class="meta-value">—</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">PWA</span>
+            <span id="pwa-status-text" class="meta-value">—</span>
+          </div>
+        </div>
+        <div class="install-hint">
+          <p class="helper-text">To install: open in Safari or Chrome and choose <strong>Add to Home Screen</strong>. The app works offline after first load.</p>
+        </div>
+      </div>
+
+      <!-- Audit Log -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-heading">Audit Log</span>
+          <button id="btn-copy-audit" class="link-btn">Copy</button>
+        </div>
+        <p class="helper-text" style="margin-bottom: 0.75rem;">Timestamped session actions. No PHI is stored here.</p>
+        <div id="audit-log" class="audit-log" role="log" aria-live="polite" aria-label="Audit log"></div>
+      </div>
+
+      <!-- Reset -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-heading">Demo Session</span>
+        </div>
+        <p class="helper-text" style="margin-bottom: 1rem;">Clear all notes, transcript, and recording state for a fresh demo session.</p>
+        <button id="btn-reset-session" class="btn btn-outline-danger">Reset Demo Session</button>
+      </div>
+
+      <p class="prototype-notice">Prototype only — not HIPAA compliant by itself.<br>No PHI stored &bull; No backend &bull; No APIs</p>
+    </div>
 
   </main>
 
-  <footer class="app-footer">
-    <p class="footer-disclaimer">Prototype only &#8212; not HIPAA compliant by itself.</p>
-    <p class="footer-small">
-      LCSW Voice Note PWA &nbsp;&#8226;&nbsp; Demo Data Only &nbsp;&#8226;&nbsp;
-      No PHI Stored &nbsp;&#8226;&nbsp; No Backend &nbsp;&#8226;&nbsp; No API Calls
-    </p>
-  </footer>
+  <!-- ── Bottom Tab Bar ─────────────────────────────────────── -->
+  <nav class="tab-bar" role="navigation" aria-label="Main navigation">
 
-  <!-- Toast notification container (injected by app.js) -->
+    <button class="tab-btn active" data-view="home" aria-label="Home">
+      <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span class="tab-label">Home</span>
+    </button>
+
+    <button class="tab-btn" data-view="capture" aria-label="Capture">
+      <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      <span class="tab-label">Capture</span>
+    </button>
+
+    <button class="tab-btn" data-view="draft" aria-label="Draft">
+      <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span class="tab-label">Draft</span>
+    </button>
+
+    <button class="tab-btn" data-view="export" aria-label="Export">
+      <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <span class="tab-label">Export</span>
+    </button>
+
+    <button class="tab-btn" data-view="settings" aria-label="Settings">
+      <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+      <span class="tab-label">Settings</span>
+    </button>
+
+  </nav>
 
   <script src="app.js"></script>
 </body>
