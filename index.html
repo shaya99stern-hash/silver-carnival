@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>LCSW Voice Notes</title>
+  <meta name="theme-color" content="#2563eb" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="LCSW Notes" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">Voice-to-note prototype</p>
+      <h1>LCSW Notes</h1>
+    </div>
+    <div class="status-stack">
+      <span id="networkStatus" class="pill success">Online</span>
+      <span id="sessionStatus" class="pill">Not started</span>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <section id="homeView" class="view active">
+      <div class="hero-card">
+        <p class="eyebrow">Current workflow</p>
+        <h2 id="homeHeadline">Start a demo session</h2>
+        <p id="homeSubtext">Capture typed notes or a browser/mock transcript, generate a SOAP draft, review it, sign it, then copy/export for eCW.</p>
+        <div class="progress-row" aria-label="workflow progress">
+          <span id="stepCapture" class="step active">Capture</span>
+          <span id="stepDraft" class="step">Draft</span>
+          <span id="stepSign" class="step">Sign</span>
+          <span id="stepExport" class="step">Export</span>
+        </div>
+        <button class="btn primary wide" data-goto="capture">Start / Continue Capture</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title-row">
+          <h3>Session summary</h3>
+          <button class="link-btn" data-goto="capture">Edit</button>
+        </div>
+        <dl class="summary-grid">
+          <div><dt>Client</dt><dd id="summaryClient">Demo Client A</dd></div>
+          <div><dt>Date</dt><dd id="summaryDate">—</dd></div>
+          <div><dt>Note</dt><dd id="summaryNoteType">SOAP</dd></div>
+          <div><dt>Mode</dt><dd id="summaryMode">Typed notes</dd></div>
+        </dl>
+      </div>
+
+      <div class="card subtle-card">
+        <h3>Important</h3>
+        <p>This is a frontend-only prototype. It is not HIPAA compliant by itself and should not be used with real client information.</p>
+      </div>
+    </section>
+
+    <section id="captureView" class="view">
+      <div class="card">
+        <div class="card-title-row">
+          <h3>Session setup</h3>
+          <span class="pill">Demo only</span>
+        </div>
+        <div class="form-grid">
+          <label>Client
+            <select id="clientSelect">
+              <option value="Demo Client A">Demo Client A</option>
+              <option value="Demo Client B">Demo Client B</option>
+              <option value="Demo Client C">Demo Client C</option>
+            </select>
+          </label>
+          <label>Session date
+            <input id="sessionDate" type="date" />
+          </label>
+          <label>Note format
+            <select id="noteType">
+              <option value="SOAP" selected>SOAP</option>
+              <option value="DAP">DAP</option>
+              <option value="BIRP">BIRP</option>
+              <option value="BRIEF">Brief Progress Note</option>
+            </select>
+          </label>
+          <label>Capture mode
+            <select id="sessionMode">
+              <option value="Typed notes">Typed notes</option>
+              <option value="Record / transcribe">Record / transcribe</option>
+              <option value="AI-style draft">AI-style draft</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="card recording-card">
+        <div class="card-title-row">
+          <h3>Recording & transcript</h3>
+          <span id="recordingBadge" class="pill">Not recording</span>
+        </div>
+        <label class="check-row"><input id="consentCheck" type="checkbox" /> Client recording consent documented</label>
+        <p class="helper">Do not use real sessions here. Real recording requires consent tracking, HIPAA-covered vendors, BAAs, and retention/deletion policies.</p>
+        <label class="check-row"><input id="autoDeleteCheck" type="checkbox" checked /> Auto-delete raw audio after transcription <span class="muted">(prototype toggle only)</span></label>
+        <div class="button-row">
+          <button id="startRecordingBtn" class="btn danger" disabled>Start Recording</button>
+          <button id="stopRecordingBtn" class="btn secondary" disabled>Stop</button>
+        </div>
+        <label>Transcript
+          <textarea id="transcriptText" rows="7" placeholder="Transcript appears here. On unsupported browsers, the app uses mock transcript text."></textarea>
+        </label>
+        <div class="button-row">
+          <button id="useTranscriptBtn" class="btn secondary">Use Transcript as Rough Notes</button>
+          <button id="clearTranscriptBtn" class="btn ghost">Clear Transcript</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Rough notes</h3>
+        <textarea id="roughNotes" rows="9" placeholder="Example: Client reported anxiety about work, sleep disruption, conflict with coworker. Practiced CBT reframing and grounding. Client denied SI/HI. Plan: grounding before bed, continue CBT next session."></textarea>
+        <p class="helper">AI-style draft only. Therapist must review and edit before signing.</p>
+        <button id="generateDraftBtn" class="btn primary wide">Generate SOAP Draft</button>
+      </div>
+    </section>
+
+    <section id="draftView" class="view">
+      <div class="card">
+        <div class="card-title-row">
+          <h3>Draft clinical note</h3>
+          <span id="draftStatus" class="pill">Draft</span>
+        </div>
+        <textarea id="draftNote" rows="19" placeholder="Generate a draft from the Capture tab. Review and edit before signing."></textarea>
+      </div>
+
+      <div id="qualityPanel" class="card quality-card hidden">
+        <h3>Draft quality check</h3>
+        <dl class="summary-grid compact">
+          <div><dt>Source used</dt><dd id="qualitySource">—</dd></div>
+          <div><dt>Completeness</dt><dd id="qualityCompleteness">—</dd></div>
+          <div><dt>Risk detected</dt><dd id="qualityRisk">—</dd></div>
+          <div><dt>Review required</dt><dd>Yes</dd></div>
+        </dl>
+      </div>
+
+      <div class="card">
+        <h3>Review & sign</h3>
+        <ul class="checklist">
+          <li>Verify transcript accuracy and clinical meaning.</li>
+          <li>Confirm interventions, assessment, plan, and risk/safety language.</li>
+          <li>Do not sign until the note reflects the actual session.</li>
+        </ul>
+        <div id="signedInfo" class="signed-box hidden"></div>
+        <div class="button-row">
+          <button id="signBtn" class="btn success">Sign / Lock Note</button>
+          <button id="unlockBtn" class="btn secondary hidden">Unlock for Amendment</button>
+        </div>
+        <div id="amendmentPanel" class="amendment hidden">
+          <label>Amendment reason
+            <textarea id="amendmentReason" rows="3" placeholder="Required before editing a signed note."></textarea>
+          </label>
+          <div class="button-row">
+            <button id="confirmUnlockBtn" class="btn warning">Confirm Unlock</button>
+            <button id="cancelUnlockBtn" class="btn ghost">Cancel</button>
+          </div>
+          <p id="amendmentError" class="error hidden">Enter an amendment reason first.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="exportView" class="view">
+      <div class="card">
+        <div class="card-title-row">
+          <h3>eCW copy/export</h3>
+          <span class="pill">Manual workflow</span>
+        </div>
+        <p class="helper">This prototype does not connect to eCW. Review the note, then copy or export and enter it manually.</p>
+        <textarea id="exportText" rows="12" readonly placeholder="Draft note will appear here."></textarea>
+        <div class="button-row">
+          <button id="copyBtn" class="btn primary">Copy for eCW</button>
+          <button id="downloadTxtBtn" class="btn secondary">Download TXT</button>
+          <button id="downloadHtmlBtn" class="btn secondary">Printable HTML</button>
+        </div>
+      </div>
+
+      <details class="card details-card">
+        <summary>Future eCW integration mock</summary>
+        <p class="helper">Real eCW integration would require approved eCW/FHIR/SMART access, app authorization, and practice approval.</p>
+        <dl class="summary-grid compact">
+          <div><dt>Patient ID</dt><dd id="mockPatient">—</dd></div>
+          <div><dt>Appointment</dt><dd id="mockAppt">—</dd></div>
+          <div><dt>Provider</dt><dd id="mockProvider">—</dd></div>
+          <div><dt>Encounter</dt><dd id="mockEncounter">—</dd></div>
+        </dl>
+        <div class="button-row">
+          <button id="loadMockEcwBtn" class="btn secondary">Load Mock Context</button>
+          <button id="simulateEcwBtn" class="btn secondary">Simulate Send</button>
+        </div>
+        <p id="mockEcwStatus" class="helper">Mock only — no data sent.</p>
+      </details>
+    </section>
+
+    <section id="settingsView" class="view">
+      <div class="card">
+        <h3>App status</h3>
+        <dl class="summary-grid compact">
+          <div><dt>PWA</dt><dd id="pwaStatus">Browser mode</dd></div>
+          <div><dt>Offline</dt><dd>Available after first load</dd></div>
+          <div><dt>Backend</dt><dd>None</dd></div>
+          <div><dt>APIs</dt><dd>None</dd></div>
+        </dl>
+        <p class="helper">To install on iPhone: open in Safari, tap Share, then Add to Home Screen.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title-row">
+          <h3>Audit log</h3>
+          <button id="copyAuditBtn" class="link-btn">Copy</button>
+        </div>
+        <p class="helper">Session-only log. No raw note text is logged.</p>
+        <pre id="auditLog" class="audit-log"></pre>
+      </div>
+
+      <div class="card danger-zone">
+        <h3>Reset demo</h3>
+        <p>Clears current transcript, rough notes, draft, and session-only audit log.</p>
+        <button id="resetBtn" class="btn outline-danger">Reset Demo Session</button>
+      </div>
+
+      <p class="prototype-footer">Prototype only — not HIPAA compliant by itself. Do not enter real client information.</p>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Main navigation">
+    <button class="nav-btn active" data-view="home"><span>Home</span></button>
+    <button class="nav-btn" data-view="capture"><span>Capture</span></button>
+    <button class="nav-btn" data-view="draft"><span>Draft</span></button>
+    <button class="nav-btn" data-view="export"><span>Export</span></button>
+    <button class="nav-btn" data-view="settings"><span>Settings</span></button>
+  </nav>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js"></script>
+</body>
+</html>
